@@ -4,7 +4,7 @@ import express, { Application } from 'express';
 
 import appRouter from './routes/todoRoute';
 import { notFound } from './middlewares/notFound';
-import { errorHandler } from './middlewapiares/errorHandler';
+import { errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
 
