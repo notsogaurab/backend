@@ -8,12 +8,12 @@ on:
 
 jobs:
   prod:
-    name: PROD ENV
+    name: Build on prod environment
     runs-on: self-hosted
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -25,7 +25,7 @@ jobs:
           docker push notsogaurab/backend:stable
           docker push notsogaurab/backend:$(git rev-parse --short "$GITHUB_SHA")
 
-      - name: version increase
+      - name: Update the package.json version
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -40,16 +40,16 @@ jobs:
           git commit -m "Increase package.json version"
           git push https://${{ secrets.GH_TOKEN }}@github.com/notsogaurab/gitaction-test.git
   dev:
-    name: DEV ENV
+    name: Build on dev environment
     runs-on: self-hosted
     if: github.ref == 'refs/heads/dev'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout code from repo
+        uses: actions/checkout@v4
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build and Push Docker image
         run: |
