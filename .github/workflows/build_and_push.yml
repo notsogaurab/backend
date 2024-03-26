@@ -28,6 +28,7 @@ jobs:
       - name: Build and Push Docker image
         run: |
           docker build -t notsogaurab/backend:stable -t notsogaurab/backend:$(git rev-parse --short "$GITHUB_SHA") .
+          docker images
           docker push notsogaurab/backend:stable
           docker push notsogaurab/backend:$(git rev-parse --short "$GITHUB_SHA")
 
