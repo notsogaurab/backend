@@ -1,0 +1,47 @@
+name: CI to build and push backend image
+
+on:
+  push:
+    branches:
+        - main
+        - dev
+  workflow_dispatch:
+
+jobs:
+  prod:
+    name: Build on prod environment
+    runs-on: self-hosted
+    outputs:
+      branch: ${{ steps.extract_branch.outputs.branch }}
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Checkout code from repo
+        uses: actions/checkout@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Build and Push Docker image
+        run: |
+          docker build -t notsogaurab/backend:stable -t notsogaurab/backend:$(git rev-parse --short "$GITHUB_SHA") .
+          docker push notsogaurab/backend:stable
+          docker push notsogaurab/backend:$(git rev-parse --short "$GITHUB_SHA")
+
+      - name: Update the package.json version
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: version increase
+        run: |
+          git config --global user.name 'notsogaurab'
+          git config --global user.email 'gauravupreti1230@gmail.com'
+          npm version patch --no-git-tag-version
+          git add package.json
+          git commit -m "Increase package.json version"
+          git push https://${{ secrets.GH_TOKEN }}@github.com/notsogaurab/backend.git
